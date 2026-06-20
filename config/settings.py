@@ -21,8 +21,15 @@ ALLOWED_HOSTS = [
     if host.strip()
 ]
 
-if "testserver" not in ALLOWED_HOSTS:
-    ALLOWED_HOSTS.append("testserver")
+# Always ensure the Azure backend hostname and testserver are allowed
+# (guards against a misconfigured DJANGO_ALLOWED_HOSTS env var on Azure)
+for _required in ["testserver", "127.0.0.1", "localhost", "find-it-backend-a9hrgdg6byaybdhz.eastasia-01.azurewebsites.net"]:
+    if _required not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append(_required)
+
+# Azure App Service proxies requests — trust the forwarded host/proto headers
+USE_X_FORWARDED_HOST = True
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 INSTALLED_APPS = [
     "django.contrib.admin",
